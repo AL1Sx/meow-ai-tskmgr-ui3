@@ -131,6 +131,10 @@ dotnet clean -p:Platform=x64
 
 详细的开发过程中遇到的问题和解决方案，请参阅 [TECHNICAL_DOC.md](TECHNICAL_DOC.md)。
 
+## 更新计划
+
+- [ ] 图标还没做
+
 ## 许可证
 
 MIT
