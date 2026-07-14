@@ -131,6 +131,10 @@ dotnet clean -p:Platform=x64
 
 详细的开发过程中遇到的问题和解决方案，请参阅 [TECHNICAL_DOC.md](TECHNICAL_DOC.md)。
 
+## 开发工具
+
+本项目使用 **OpenCode** 辅助开发。
+
 ## 更新计划
 
 - [ ] 图标还没做
