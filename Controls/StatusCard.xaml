@@ -1,0 +1,36 @@
+<UserControl
+    x:Class="meow_ai_tskmgr_ui3.Controls.StatusCard"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d">
+
+    <Border Style="{StaticResource StatusCardBorderStyle}">
+        <StackPanel Spacing="4">
+            <TextBlock
+                x:Name="LabelText"
+                Style="{StaticResource CardTitleStyle}"
+                Text="{x:Bind Label}" />
+            <TextBlock
+                x:Name="ValueText"
+                Style="{StaticResource CardValueStyle}"
+                Text="{x:Bind Value, Mode=OneWay}" />
+            <TextBlock
+                x:Name="InfoTextBlock"
+                Style="{StaticResource CardInfoStyle}"
+                Text="{x:Bind AdditionalInfo}"
+                Visibility="{x:Bind AdditionalInfo, Converter={StaticResource StringToVisibilityConverter}}" />
+            <Grid Height="8" Margin="0,4,0,0">
+                <Border
+                    x:Name="ProgressBackground"
+                    Style="{StaticResource ProgressBarBackgroundStyle}"
+                    HorizontalAlignment="Stretch" />
+                <Border
+                    x:Name="ProgressFill"
+                    Style="{StaticResource ProgressBarFillStyle}"
+                    Width="{x:Bind Progress, Converter={StaticResource PercentageToWidthConverter}, Mode=OneWay}" />
+            </Grid>
+        </StackPanel>
+    </Border>
+</UserControl>

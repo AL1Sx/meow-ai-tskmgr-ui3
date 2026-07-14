@@ -1,0 +1,10 @@
+{
+  "profiles": {
+    "meow-ai-tskmgr-ui3 (Package)": {
+      "commandName": "MsixPackage"
+    },
+    "meow-ai-tskmgr-ui3 (Unpackaged)": {
+      "commandName": "Project"
+    }
+  }
+}

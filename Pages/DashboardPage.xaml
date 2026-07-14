@@ -1,0 +1,135 @@
+<Page
+    x:Class="meow_ai_tskmgr_ui3.Pages.DashboardPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:controls="using:meow_ai_tskmgr_ui3.Controls"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d">
+
+    <ScrollViewer Padding="16">
+        <StackPanel Spacing="12">
+            <Grid ColumnSpacing="12">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+                <controls:StatusCard
+                    Grid.Column="0"
+                    Label="CPU"
+                    Value="{x:Bind ViewModel.CpuUsage, Mode=OneWay, Converter={StaticResource FloatToStringConverter}}"
+                    AdditionalInfo="{x:Bind ViewModel.CpuName, Mode=OneWay}"
+                    Progress="{x:Bind ViewModel.CpuUsage, Mode=OneWay}" />
+                <controls:StatusCard
+                    Grid.Column="1"
+                    Label="GPU"
+                    Value="{x:Bind ViewModel.GpuUsage, Mode=OneWay, Converter={StaticResource FloatToStringConverter}}"
+                    AdditionalInfo="{x:Bind ViewModel.GpuName, Mode=OneWay}"
+                    Progress="{x:Bind ViewModel.GpuUsage, Mode=OneWay}" />
+                <controls:StatusCard
+                    Grid.Column="2"
+                    Label="RAM"
+                    Value="{x:Bind ViewModel.RamUsage, Mode=OneWay, Converter={StaticResource FloatToStringConverter}}"
+                    AdditionalInfo="{x:Bind ViewModel.RamDetail, Mode=OneWay}"
+                    Progress="{x:Bind ViewModel.RamUsage, Mode=OneWay}" />
+            </Grid>
+
+            <Button
+                HorizontalAlignment="Stretch"
+                Command="{x:Bind ViewModel.TriggerAnalysisCommand}">
+                <StackPanel Orientation="Horizontal" Spacing="8">
+                    <FontIcon Glyph="&#xE9F5;" FontSize="14" />
+                    <TextBlock Text="开始分析" />
+                </StackPanel>
+            </Button>
+
+            <controls:AIAnalysisCard
+                AnalysisContent="{x:Bind ViewModel.AiContent, Mode=OneWay}"
+                IsAnalyzing="{x:Bind ViewModel.IsAnalyzing, Mode=OneWay}"
+                StatusText="{x:Bind ViewModel.AnalysisStatus, Mode=OneWay}" />
+
+            <Border Style="{StaticResource CardBorderStyle}">
+                <StackPanel Spacing="6">
+                    <TextBlock
+                        Style="{StaticResource CardTitleStyle}"
+                        Text="统计信息" />
+                    <Grid ColumnSpacing="12">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+                        <StackPanel Grid.Column="0" Spacing="2">
+                            <TextBlock
+                                FontSize="12"
+                                Foreground="{ThemeResource TextFillColorTertiaryBrush}"
+                                Text="上次分析" />
+                            <TextBlock
+                                FontSize="14"
+                                FontWeight="SemiBold"
+                                Text="{x:Bind ViewModel.LastAnalysisTime, Mode=OneWay}" />
+                        </StackPanel>
+                        <StackPanel Grid.Column="1" Spacing="2">
+                            <TextBlock
+                                FontSize="12"
+                                Foreground="{ThemeResource TextFillColorTertiaryBrush}"
+                                Text="耗时" />
+                            <TextBlock
+                                FontSize="14"
+                                FontWeight="SemiBold"
+                                Text="{x:Bind ViewModel.AnalysisDuration, Mode=OneWay}" />
+                        </StackPanel>
+                        <StackPanel Grid.Column="2" Spacing="2">
+                            <TextBlock
+                                FontSize="12"
+                                Foreground="{ThemeResource TextFillColorTertiaryBrush}"
+                                Text="下次分析" />
+                            <TextBlock
+                                FontSize="14"
+                                FontWeight="SemiBold"
+                                Text="{x:Bind ViewModel.NextAnalysisTime, Mode=OneWay}" />
+                        </StackPanel>
+                    </Grid>
+                    <Grid ColumnSpacing="12" Margin="0,8,0,0">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+                        <StackPanel Grid.Column="0" Spacing="2">
+                            <TextBlock
+                                FontSize="12"
+                                Foreground="{ThemeResource TextFillColorTertiaryBrush}"
+                                Text="Token" />
+                            <TextBlock
+                                FontSize="14"
+                                FontWeight="SemiBold"
+                                Text="{x:Bind ViewModel.TokenInfo, Mode=OneWay}" />
+                        </StackPanel>
+                        <StackPanel Grid.Column="1" Spacing="2">
+                            <TextBlock
+                                FontSize="12"
+                                Foreground="{ThemeResource TextFillColorTertiaryBrush}"
+                                Text="费用" />
+                            <TextBlock
+                                FontSize="14"
+                                FontWeight="SemiBold"
+                                Text="{x:Bind ViewModel.CostInfo, Mode=OneWay}" />
+                        </StackPanel>
+                        <StackPanel Grid.Column="2" Spacing="2">
+                            <TextBlock
+                                FontSize="12"
+                                Foreground="{ThemeResource TextFillColorTertiaryBrush}"
+                                Text="24h预估" />
+                            <TextBlock
+                                FontSize="14"
+                                FontWeight="SemiBold"
+                                Text="{x:Bind ViewModel.Estimate24h, Mode=OneWay}" />
+                        </StackPanel>
+                    </Grid>
+                </StackPanel>
+            </Border>
+        </StackPanel>
+    </ScrollViewer>
+</Page>
