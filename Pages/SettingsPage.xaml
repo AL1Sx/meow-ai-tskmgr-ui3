@@ -28,9 +28,16 @@
                     </StackPanel>
                     <StackPanel Spacing="4">
                         <TextBlock Text="模型" />
+                        <ComboBox
+                            HorizontalAlignment="Stretch"
+                            ItemsSource="{x:Bind ViewModel.AvailableModels, Mode=OneWay}"
+                            SelectedIndex="{x:Bind ViewModel.ModelIndex, Mode=TwoWay}"
+                            DisplayMemberPath="DisplayName" />
                         <TextBox
                             HorizontalAlignment="Stretch"
-                            Text="{x:Bind ViewModel.Model, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                            PlaceholderText="输入兼容的模型名称"
+                            Text="{x:Bind ViewModel.CustomModelName, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                            Visibility="{x:Bind ViewModel.IsCustomModel, Converter={StaticResource BooleanToVisibilityConverter}, Mode=OneWay}" />
                     </StackPanel>
                 </StackPanel>
             </Border>

@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
+using System.Linq;
 using System.Management;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
@@ -11,19 +12,54 @@ using Microsoft.UI.Xaml.Controls;
 
 namespace meow_ai_tskmgr_ui3.ViewModels;
 
+public class ModelOption
+{
+    public string Name { get; set; } = "";
+    public string DisplayName { get; set; } = "";
+    public string Description { get; set; } = "";
+}
+
 public partial class SettingsViewModel : INotifyPropertyChanged
 {
     private readonly ConfigService _configService;
 
+    private const int CustomModelIndex = 2;
+
     private string _apiEndpoint;
     private string _apiKey;
     private string _model;
+    private int _modelIndex;
+    private string _modelDescription;
+    private string _customModelName;
+    private bool _isCustomModel;
     private int _analysisInterval;
     private bool _showCpuName;
     private bool _showGpuName;
     private bool _showRamDetail;
     private bool _showMotherboard;
     private int _gpuIndex;
+
+    public ObservableCollection<ModelOption> AvailableModels { get; } = new()
+    {
+        new ModelOption
+        {
+            Name = "deepseek-v4-flash",
+            DisplayName = "DeepSeek V4 Flash（推荐）",
+            Description = ""
+        },
+        new ModelOption
+        {
+            Name = "deepseek-v4-pro",
+            DisplayName = "DeepSeek V4 Pro",
+            Description = ""
+        },
+        new ModelOption
+        {
+            Name = "__custom__",
+            DisplayName = "其他兼容模型（自定义）",
+            Description = ""
+        }
+    };
 
     public string ApiEndpoint
     {
@@ -41,6 +77,45 @@ public partial class SettingsViewModel : INotifyPropertyChanged
     {
         get => _model;
         set { _model = value; OnPropertyChanged(); }
+    }
+
+    public string ModelDescription
+    {
+        get => _modelDescription;
+        set { _modelDescription = value; OnPropertyChanged(); }
+    }
+
+    public string CustomModelName
+    {
+        get => _customModelName;
+        set
+        {
+            _customModelName = value;
+            if (_isCustomModel) Model = value;
+            OnPropertyChanged();
+        }
+    }
+
+    public bool IsCustomModel
+    {
+        get => _isCustomModel;
+        set { _isCustomModel = value; OnPropertyChanged(); }
+    }
+
+    public int ModelIndex
+    {
+        get => _modelIndex;
+        set
+        {
+            if (_modelIndex != value && value >= 0 && value < AvailableModels.Count)
+            {
+                _modelIndex = value;
+                IsCustomModel = value == CustomModelIndex;
+                Model = IsCustomModel ? _customModelName : AvailableModels[value].Name;
+                ModelDescription = AvailableModels[value].Description;
+                OnPropertyChanged();
+            }
+        }
     }
 
     public int AnalysisInterval
@@ -90,6 +165,10 @@ public partial class SettingsViewModel : INotifyPropertyChanged
         _apiEndpoint = _configService.Config.Api.Endpoint;
         _apiKey = _configService.Config.Api.ApiKey;
         _model = _configService.Config.Api.Model;
+        _customModelName = _model;
+        _modelIndex = FindModelIndex(_model);
+        _isCustomModel = _modelIndex == CustomModelIndex;
+        _modelDescription = AvailableModels[_modelIndex].Description;
         _analysisInterval = _configService.Config.Monitor.AnalysisIntervalMinutes;
         _showCpuName = _configService.Config.Hardware.ShowCpuName;
         _showGpuName = _configService.Config.Hardware.ShowGpuName;
@@ -99,6 +178,17 @@ public partial class SettingsViewModel : INotifyPropertyChanged
 
         // 加载 GPU 列表
         LoadGpuList();
+    }
+
+    private int FindModelIndex(string modelName)
+    {
+        for (int i = 0; i < AvailableModels.Count; i++)
+        {
+            if (string.Equals(AvailableModels[i].Name, modelName, StringComparison.OrdinalIgnoreCase))
+                return i;
+        }
+        // 不匹配任何预设模型 → 视为自定义
+        return CustomModelIndex;
     }
 
     private void LoadGpuList()

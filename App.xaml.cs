@@ -20,6 +20,11 @@ public partial class App : Application
     public App()
     {
         this.InitializeComponent();
+        this.UnhandledException += (s, e) =>
+        {
+            System.Diagnostics.Debug.WriteLine($"Unhandled exception: {e.Message}");
+            e.Handled = true;
+        };
         InitializeServices();
     }
 
@@ -47,6 +52,11 @@ public partial class App : Application
         InitializeConverters();
 
         MainWindow = new MainWindow();
+        MainWindow.Closed += (sender, args) =>
+        {
+            MonitorService?.Dispose();
+            (AIService as IDisposable)?.Dispose();
+        };
         MainWindow.Activate();
     }
 
@@ -65,6 +75,8 @@ public partial class App : Application
                 Resources["PercentageToWidthConverter"] = new PercentageToWidthConverter { MaxWidth = 120 };
             if (!Resources.ContainsKey("BoolNegationConverter"))
                 Resources["BoolNegationConverter"] = new BoolNegationConverter();
+            if (!Resources.ContainsKey("BooleanToVisibilityConverter"))
+                Resources["BooleanToVisibilityConverter"] = new BooleanToVisibilityConverter();
         }
         catch (Exception ex)
         {

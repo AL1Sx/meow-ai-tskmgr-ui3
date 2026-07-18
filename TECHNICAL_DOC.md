@@ -480,6 +480,68 @@ System.NullReferenceException: "Object reference not set to an instance of an ob
 
 ---
 
+---
+
+### 问题 12：Indexed x:Bind 导致 XAML 编译错误 WMC9999
+
+**症状：**
+```
+Xaml Internal Error error WMC9999: 未能找到任何适合于指定的区域性或非特定区域性的资源
+```
+
+**原因：**
+WinUI 3 的 `x:Bind` 不支持索引器语法（如 `AvailableModels[ViewModel.ModelIndex].Description`）。
+
+**解决方案：**
+改用中间属性传递数据：
+```csharp
+// ViewModel 中定义
+private string _modelDescription;
+public string ModelDescription { get; set; }
+// 在 ModelIndex setter 中同步更新
+ModelDescription = AvailableModels[value].Description;
+```
+
+```xml
+<!-- XAML 中使用简单属性绑定 -->
+<TextBlock Text="{x:Bind ViewModel.ModelDescription, Mode=OneWay}" />
+```
+
+---
+
+### 功能：AI 模型选择与计费说明
+
+#### 支持模型
+
+用户在设置页面可通过 ComboBox 选择模型：
+
+| 选项 | 模型名 | 定价 |
+|------|--------|------|
+| DeepSeek V4 Flash（推荐） | `deepseek-v4-flash` | 输入 ¥1，输出 ¥2，缓存 ¥0.02（/百万tokens） |
+| DeepSeek V4 Pro | `deepseek-v4-pro` | 输入 ¥3，输出 ¥6，缓存 ¥0.025（/百万tokens） |
+| 其他兼容模型（自定义） | 用户输入 | 计费估算不准确 |
+
+#### 动态费用计算
+
+`AnalysisResult.Cost` 根据 `ModelName` 自动切换单价：
+```csharp
+var (inputPrice, outputPrice) = ModelName switch
+{
+    "deepseek-v4-pro" => (3.00, 6.00),
+    _ => (1.00, 2.00)
+};
+return (PromptTokens * inputPrice + CompletionTokens * outputPrice) / 1_000_000.0;
+```
+
+#### 峰谷定价提示
+
+DeepSeek API 预计 2026 年 7 月中旬起采用峰谷定价：
+- **高峰时段**：北京时间每日 9:00～12:00 和 14:00～18:00
+- **价格**：平日价格的 **2 倍**
+- 仪表盘费用显示为平日基础价格估算
+
+---
+
 ## 待优化项
 
 1. **主题切换**：ThemeHelper 已实现，但需要在 UI 中添加主题切换控件

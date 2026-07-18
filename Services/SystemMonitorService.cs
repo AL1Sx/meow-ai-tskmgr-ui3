@@ -132,12 +132,15 @@ public class SystemMonitorService : IDisposable
         {
             var processes = Process.GetProcesses();
             var processInfos = new List<ProcessInfo>();
+            var currentPids = new HashSet<int>();
 
             foreach (var proc in processes)
             {
                 try
                 {
                     if (proc.Id == 0) continue;
+
+                    currentPids.Add(proc.Id);
 
                     var info = new ProcessInfo
                     {
@@ -149,20 +152,35 @@ public class SystemMonitorService : IDisposable
                     var cpuTime = proc.TotalProcessorTime;
                     var now = DateTime.Now;
 
-                    if (_prevCpuTimes.TryGetValue(proc.Id, out var prev))
+                    lock (_prevCpuTimes)
                     {
-                        var cpuDelta = cpuTime - prev.CpuTime;
-                        var timeDelta = now - prev.Time;
-                        if (timeDelta.TotalMilliseconds > 0)
+                        if (_prevCpuTimes.TryGetValue(proc.Id, out var prev))
                         {
-                            info.CpuPercent = (float)(cpuDelta.TotalMilliseconds / (timeDelta.TotalMilliseconds * Environment.ProcessorCount) * 100);
+                            var cpuDelta = cpuTime - prev.CpuTime;
+                            var timeDelta = now - prev.Time;
+                            if (timeDelta.TotalMilliseconds > 0)
+                            {
+                                info.CpuPercent = (float)(cpuDelta.TotalMilliseconds / (timeDelta.TotalMilliseconds * Environment.ProcessorCount) * 100);
+                            }
                         }
+                        _prevCpuTimes[proc.Id] = (cpuTime, now);
                     }
-                    _prevCpuTimes[proc.Id] = (cpuTime, now);
 
                     processInfos.Add(info);
                 }
                 catch { }
+                finally
+                {
+                    proc.Dispose();
+                }
+            }
+
+            // 清理已退出的进程条目
+            lock (_prevCpuTimes)
+            {
+                var deadPids = _prevCpuTimes.Keys.Where(pid => !currentPids.Contains(pid)).ToList();
+                foreach (var pid in deadPids)
+                    _prevCpuTimes.Remove(pid);
             }
 
             status.TopCpuProcesses = processInfos

@@ -31,7 +31,19 @@ public class AnalysisResult
     public int TotalTokens => PromptTokens + CompletionTokens;
     public double DurationSeconds { get; set; }
     public DateTime Timestamp { get; set; }
-    public double Cost => (PromptTokens * 1.00 + CompletionTokens * 2.00) / 1_000_000.0;
+    public string ModelName { get; set; } = "deepseek-v4-flash";
+    public double Cost
+    {
+        get
+        {
+            var (inputPrice, outputPrice) = ModelName switch
+            {
+                "deepseek-v4-pro" => (3.00, 6.00),
+                _ => (1.00, 2.00)
+            };
+            return (PromptTokens * inputPrice + CompletionTokens * outputPrice) / 1_000_000.0;
+        }
+    }
 }
 
 public class AppConfig
@@ -45,7 +57,7 @@ public class ApiSettings
 {
     public string Endpoint { get; set; } = "https://api.deepseek.com";
     public string ApiKey { get; set; } = "";
-    public string Model { get; set; } = "deepseek-chat";
+    public string Model { get; set; } = "deepseek-v4-flash";
 }
 
 public class MonitorSettings

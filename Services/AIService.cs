@@ -10,15 +10,27 @@ using meow_ai_tskmgr_ui3.Models;
 
 namespace meow_ai_tskmgr_ui3.Services;
 
-public class AIService
+public class AIService : IDisposable
 {
     private readonly ConfigService _configService;
     private readonly HttpClient _httpClient;
+    private bool _disposed;
 
     public AIService(ConfigService configService)
     {
         _configService = configService;
         _httpClient = new HttpClient();
+        _httpClient.DefaultRequestHeaders.Accept.Add(
+            new System.Net.Http.Headers.MediaTypeWithQualityHeaderValue("application/json"));
+    }
+
+    public void Dispose()
+    {
+        if (!_disposed)
+        {
+            _httpClient.Dispose();
+            _disposed = true;
+        }
     }
 
     public async Task<AnalysisResult> AnalyzeSystemAsync(SystemStatus status)
@@ -36,7 +48,8 @@ public class AIService
             PromptTokens = result.PromptTokens,
             CompletionTokens = result.CompletionTokens,
             DurationSeconds = sw.Elapsed.TotalSeconds,
-            Timestamp = DateTime.Now
+            Timestamp = DateTime.Now,
+            ModelName = _configService.Config.Api.Model ?? "deepseek-v4-flash"
         };
     }
 
@@ -117,7 +130,7 @@ public class AIService
 
         var requestBody = new
         {
-            model = config.Model ?? "deepseek-chat",
+            model = config.Model ?? "deepseek-v4-flash",
             messages = new[]
             {
                 new { role = "user", content = userMessage }
@@ -127,15 +140,16 @@ public class AIService
         };
 
         var json = JsonSerializer.Serialize(requestBody);
-        var content = new StringContent(json, Encoding.UTF8, "application/json");
 
-        _httpClient.DefaultRequestHeaders.Clear();
-        _httpClient.DefaultRequestHeaders.Add("Authorization", $"Bearer {config.ApiKey}");
+        using var request = new HttpRequestMessage(HttpMethod.Post, $"{config.Endpoint ?? "https://api.deepseek.com"}/v1/chat/completions")
+        {
+            Content = new StringContent(json, Encoding.UTF8, "application/json"),
+            Headers = { Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", config.ApiKey) }
+        };
 
         try
         {
-            var endpoint = config.Endpoint ?? "https://api.deepseek.com";
-            var response = await _httpClient.PostAsync($"{endpoint}/v1/chat/completions", content);
+            var response = await _httpClient.SendAsync(request);
             var responseJson = await response.Content.ReadAsStringAsync();
 
             if (!response.IsSuccessStatusCode)
