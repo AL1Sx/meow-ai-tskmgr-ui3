@@ -36,6 +36,7 @@
             </Grid>
 
             <Button
+                AutomationProperties.AutomationId="BtnTriggerAnalysis"
                 HorizontalAlignment="Stretch"
                 Command="{x:Bind ViewModel.TriggerAnalysisCommand}">
                 <StackPanel Orientation="Horizontal" Spacing="8">

@@ -19,17 +19,21 @@
             <TextBlock
                 x:Name="InfoTextBlock"
                 Style="{StaticResource CardInfoStyle}"
-                Text="{x:Bind AdditionalInfo}"
-                Visibility="{x:Bind AdditionalInfo, Converter={StaticResource StringToVisibilityConverter}}" />
+                Text="{x:Bind AdditionalInfo, Mode=OneWay}"
+                Visibility="{x:Bind AdditionalInfo, Mode=OneWay, Converter={StaticResource StringToVisibilityConverter}}" />
             <Grid Height="8" Margin="0,4,0,0">
                 <Border
-                    x:Name="ProgressBackground"
                     Style="{StaticResource ProgressBarBackgroundStyle}"
                     HorizontalAlignment="Stretch" />
                 <Border
-                    x:Name="ProgressFill"
                     Style="{StaticResource ProgressBarFillStyle}"
-                    Width="{x:Bind Progress, Converter={StaticResource PercentageToWidthConverter}, Mode=OneWay}" />
+                    HorizontalAlignment="Stretch">
+                    <Border.RenderTransform>
+                        <ScaleTransform
+                            CenterX="0"
+                            ScaleX="{x:Bind Progress, Mode=OneWay, Converter={StaticResource FloatToScaleConverter}}" />
+                    </Border.RenderTransform>
+                </Border>
             </Grid>
         </StackPanel>
     </Border>

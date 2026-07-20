@@ -138,23 +138,33 @@ public class SystemMonitorService : IDisposable
             {
                 try
                 {
-                    if (proc.Id == 0) continue;
+                    var pid = proc.Id;
+                    if (pid <= 4) continue;
 
-                    currentPids.Add(proc.Id);
+                    // Try to access process name as accessibility check
+                    var name = proc.ProcessName;
+                    if (string.IsNullOrEmpty(name)) continue;
+
+                    currentPids.Add(pid);
+
+                    ulong ramMB = 0;
+                    try { ramMB = (ulong)(proc.WorkingSet64 / (1024 * 1024)); } catch { }
+
+                    TimeSpan cpuTime = TimeSpan.Zero;
+                    try { cpuTime = proc.TotalProcessorTime; } catch { }
+
+                    var now = DateTime.Now;
 
                     var info = new ProcessInfo
                     {
-                        Pid = proc.Id,
-                        Name = proc.ProcessName,
-                        RamMB = (ulong)(proc.WorkingSet64 / (1024 * 1024))
+                        Pid = pid,
+                        Name = name,
+                        RamMB = ramMB
                     };
-
-                    var cpuTime = proc.TotalProcessorTime;
-                    var now = DateTime.Now;
 
                     lock (_prevCpuTimes)
                     {
-                        if (_prevCpuTimes.TryGetValue(proc.Id, out var prev))
+                        if (_prevCpuTimes.TryGetValue(pid, out var prev))
                         {
                             var cpuDelta = cpuTime - prev.CpuTime;
                             var timeDelta = now - prev.Time;
@@ -163,7 +173,7 @@ public class SystemMonitorService : IDisposable
                                 info.CpuPercent = (float)(cpuDelta.TotalMilliseconds / (timeDelta.TotalMilliseconds * Environment.ProcessorCount) * 100);
                             }
                         }
-                        _prevCpuTimes[proc.Id] = (cpuTime, now);
+                        _prevCpuTimes[pid] = (cpuTime, now);
                     }
 
                     processInfos.Add(info);
@@ -219,19 +229,27 @@ public class SystemMonitorService : IDisposable
 
     public List<ProcessInfo> GetAllProcesses()
     {
-        var processes = new List<ProcessInfo>();
+        var result = new List<ProcessInfo>();
         try
         {
             foreach (var proc in Process.GetProcesses())
             {
                 try
                 {
-                    if (proc.Id == 0) continue;
-                    processes.Add(new ProcessInfo
+                    var pid = proc.Id;
+                    if (pid <= 4) continue;
+
+                    var name = proc.ProcessName;
+                    if (string.IsNullOrEmpty(name)) continue;
+
+                    ulong ramMB = 0;
+                    try { ramMB = (ulong)(proc.WorkingSet64 / (1024 * 1024)); } catch { }
+
+                    result.Add(new ProcessInfo
                     {
-                        Pid = proc.Id,
-                        Name = proc.ProcessName,
-                        RamMB = (ulong)(proc.WorkingSet64 / (1024 * 1024))
+                        Pid = pid,
+                        Name = name,
+                        RamMB = ramMB
                     });
                 }
                 catch { }
@@ -242,7 +260,7 @@ public class SystemMonitorService : IDisposable
             }
         }
         catch { }
-        return processes.OrderByDescending(p => p.RamMB).ToList();
+        return result.OrderByDescending(p => p.RamMB).ToList();
     }
 
     public void Dispose()

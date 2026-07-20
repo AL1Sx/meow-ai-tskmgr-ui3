@@ -29,12 +29,13 @@ Pages/
   DashboardPage     → CPU/GPU/RAM cards, AI analysis, stats
   HardwareInfoPage  → WMI hardware info (CPU/GPU/mobo/disk names)
   ProcessListPage   → Process list with search + AI query
-  SettingsPage      → API config + monitor interval
+  SettingsPage      → API config + monitor interval + theme toggle
 ViewModels/        → One VM per page, INotifyPropertyChanged (manual)
 Services/          → SystemMonitorService, AIService, ConfigService
+Helpers/           → ThemeHelper, WindowHelper, SettingsHelper
 Models/            → SystemStatus, ProcessInfo, AnalysisResult, AppConfig
 Converters.cs      → Root namespace converters (not in subfolder)
-Styles/Cards.xaml   → Shared card styles + PercentageToWidthConverter
+Styles/Cards.xaml   → Shared card styles + FloatToScaleConverter
 ```
 
 ## WinUI 3 Quirks (Hard-Won Lessons)
@@ -71,12 +72,44 @@ var windowId = Microsoft.UI.Win32Interop.GetWindowIdFromWindow(hwnd);
 
 Returns `IAsyncOperation`, not `Task`. Wrap in try-catch to avoid unhandled exceptions.
 
+### 7. Progress bar width must not use fixed-width converter
+
+`Border.Width` with `PercentageToWidthConverter(MaxWidth=120)` breaks on window resize.
+Use `ScaleTransform(CenterX=0, ScaleX=Progress/100)` on a `HorizontalAlignment="Stretch"` Border instead.
+
+### 8. NavigationView must have a Header to prevent hamburger overlap
+
+Without `NavigationView.Header`, the pane toggle button in minimal mode overlaps the Frame content.
+Always set `<NavigationView.Header><Grid Height="48" /></NavigationView.Header>` to reserve layout space.
+
+### 9. Window title bar does not follow app RequestedTheme
+
+`RequestedTheme` only affects client area. Update `AppWindow.TitleBar` button colors manually
+via `ThemeHelper.UpdateTitleBarTheme()`. The `ThemeHelper` handles this automatically.
+
+**Critical**: Only set `Button*` properties (`ButtonForegroundColor`, `ButtonBackgroundColor` etc.).
+Never set `ForegroundColor` or `BackgroundColor` — those activate full custom title bar mode
+and break system theme tracking. They are only valid with `ExtendsContentIntoTitleBar = true`.
+
+### 10. MicaBackdrop follows system theme, not app RequestedTheme
+
+`MicaBackdrop` uses the Windows system light/dark mode regardless of the app's `RequestedTheme`.
+If the system is in dark mode but the app switches to light mode via `RequestedTheme`,
+the Mica backdrop remains dark. Set theme to "跟随系统" in Settings for consistent appearance.
+
+### 11. Process.GetProcesses() throws Win32Exception on system processes
+
+System processes (PID 0/4 etc.) throw on `ProcessName`/`WorkingSet64`/`TotalProcessorTime`.
+Always guard individual property access with try-catch and skip inaccessible PIDs early.
+
 ## Service Lifecycle
 
 ```
 App(ConfigService) → AIService(ConfigService) → SystemMonitorService
 All accessed via App.ConfigService, App.AI, App.Monitor statics.
 ViewModels created in App.InitializeServices(), accessed via App.DashboardViewModel etc.
+ThemeHelper initialized in App.OnLaunched() after converter setup.
+WindowHelper.TrackWindow() called for each Window to support theme propagation.
 ```
 
 ## Key Dependencies

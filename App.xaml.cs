@@ -1,5 +1,6 @@
 ﻿using System;
 using Microsoft.UI.Xaml;
+using meow_ai_tskmgr_ui3.Helpers;
 using meow_ai_tskmgr_ui3.Services;
 using meow_ai_tskmgr_ui3.ViewModels;
 
@@ -51,7 +52,15 @@ public partial class App : Application
         // Initialize converters after XAML is loaded
         InitializeConverters();
 
+        // Initialize and apply saved theme
+        ThemeHelper.Initialize();
+
         MainWindow = new MainWindow();
+        WindowHelper.TrackWindow(MainWindow);
+
+        // Apply title bar theme after window is created
+        try { ThemeHelper.UpdateTitleBarTheme(MainWindow.AppWindow); } catch { }
+
         MainWindow.Closed += (sender, args) =>
         {
             MonitorService?.Dispose();
@@ -71,8 +80,8 @@ public partial class App : Application
                 Resources["UInt64ToStringConverter"] = new UInt64ToStringConverter();
             if (!Resources.ContainsKey("StringToVisibilityConverter"))
                 Resources["StringToVisibilityConverter"] = new StringToVisibilityConverter();
-            if (!Resources.ContainsKey("PercentageToWidthConverter"))
-                Resources["PercentageToWidthConverter"] = new PercentageToWidthConverter { MaxWidth = 120 };
+            if (!Resources.ContainsKey("FloatToScaleConverter"))
+                Resources["FloatToScaleConverter"] = new FloatToScaleConverter();
             if (!Resources.ContainsKey("BoolNegationConverter"))
                 Resources["BoolNegationConverter"] = new BoolNegationConverter();
             if (!Resources.ContainsKey("BooleanToVisibilityConverter"))

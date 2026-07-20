@@ -4,20 +4,12 @@ using Microsoft.UI.Xaml.Data;
 
 namespace meow_ai_tskmgr_ui3;
 
-public class PercentageToWidthConverter : IValueConverter
+public class FloatToScaleConverter : IValueConverter
 {
-    public double MaxWidth { get; set; } = 120;
-
     public object Convert(object value, Type targetType, object parameter, string language)
     {
-        if (value is float percentage)
-        {
-            return percentage / 100.0 * MaxWidth;
-        }
-        if (value is double doubleValue)
-        {
-            return doubleValue / 100.0 * MaxWidth;
-        }
+        if (value is float f) return f / 100.0;
+        if (value is double d) return d / 100.0;
         return 0.0;
     }
 

@@ -44,6 +44,20 @@
 
             <TextBlock
                 Style="{StaticResource SectionHeaderStyle}"
+                Text="外观" />
+
+            <Border Style="{StaticResource SettingsCardStyle}">
+                <StackPanel Spacing="8">
+                    <TextBlock Text="主题模式" />
+                    <RadioButtons
+                        HorizontalAlignment="Stretch"
+                        ItemsSource="{x:Bind ViewModel.ThemeOptions, Mode=OneWay}"
+                        SelectedIndex="{x:Bind ViewModel.SelectedThemeIndex, Mode=TwoWay}" />
+                </StackPanel>
+            </Border>
+
+            <TextBlock
+                Style="{StaticResource SectionHeaderStyle}"
                 Text="监控设置" />
 
             <Border Style="{StaticResource SettingsCardStyle}">
@@ -86,6 +100,7 @@
             </Border>
 
             <Button
+                AutomationProperties.AutomationId="BtnSaveSettings"
                 HorizontalAlignment="Stretch"
                 Command="{x:Bind ViewModel.SaveSettingsCommand}"
                 Style="{StaticResource AccentButtonStyle}">

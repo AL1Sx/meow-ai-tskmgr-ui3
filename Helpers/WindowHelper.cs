@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Runtime.InteropServices;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 
@@ -29,13 +28,5 @@ public static class WindowHelper
             }
         }
         return null;
-    }
-
-    [DllImport("user32.dll")]
-    private static extern IntPtr GetActiveWindow();
-
-    public static IntPtr GetWindowHandle(Window window)
-    {
-        return GetActiveWindow();
     }
 }

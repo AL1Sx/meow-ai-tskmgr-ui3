@@ -7,7 +7,9 @@ using System.Management;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.Input;
+using meow_ai_tskmgr_ui3.Helpers;
 using meow_ai_tskmgr_ui3.Services;
+using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 
 namespace meow_ai_tskmgr_ui3.ViewModels;
@@ -38,6 +40,29 @@ public partial class SettingsViewModel : INotifyPropertyChanged
     private bool _showRamDetail;
     private bool _showMotherboard;
     private int _gpuIndex;
+    private int _selectedThemeIndex;
+
+    public string[] ThemeOptions { get; } = { "跟随系统", "浅色", "深色" };
+
+    public int SelectedThemeIndex
+    {
+        get => _selectedThemeIndex;
+        set
+        {
+            if (_selectedThemeIndex != value)
+            {
+                _selectedThemeIndex = value;
+                OnPropertyChanged();
+                var theme = value switch
+                {
+                    1 => ElementTheme.Light,
+                    2 => ElementTheme.Dark,
+                    _ => ElementTheme.Default
+                };
+                ThemeHelper.CurrentTheme = theme;
+            }
+        }
+    }
 
     public ObservableCollection<ModelOption> AvailableModels { get; } = new()
     {
@@ -175,6 +200,12 @@ public partial class SettingsViewModel : INotifyPropertyChanged
         _showRamDetail = _configService.Config.Hardware.ShowRamDetail;
         _showMotherboard = _configService.Config.Hardware.ShowMotherboard;
         _gpuIndex = _configService.Config.Hardware.GpuIndex;
+        _selectedThemeIndex = ThemeHelper.CurrentTheme switch
+        {
+            ElementTheme.Light => 1,
+            ElementTheme.Dark => 2,
+            _ => 0
+        };
 
         // 加载 GPU 列表
         LoadGpuList();

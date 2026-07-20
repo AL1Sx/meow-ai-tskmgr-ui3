@@ -18,11 +18,16 @@
             IsSettingsVisible="False"
             SelectionChanged="NavigationView_SelectionChanged">
 
+            <NavigationView.Header>
+                <Grid Height="48" />
+            </NavigationView.Header>
+
             <Frame x:Name="ContentFrame" />
 
             <NavigationView.MenuItems>
                 <NavigationViewItem
                     x:Name="DashboardItem"
+                    AutomationProperties.AutomationId="NavDashboard"
                     Content="仪表盘"
                     Tag="Dashboard">
                     <NavigationViewItem.Icon>
@@ -31,6 +36,7 @@
                 </NavigationViewItem>
                 <NavigationViewItem
                     x:Name="HardwareInfoItem"
+                    AutomationProperties.AutomationId="NavHardwareInfo"
                     Content="硬件信息"
                     Tag="HardwareInfo">
                     <NavigationViewItem.Icon>
@@ -39,6 +45,7 @@
                 </NavigationViewItem>
                 <NavigationViewItem
                     x:Name="ProcessListItem"
+                    AutomationProperties.AutomationId="NavProcessList"
                     Content="进程列表"
                     Tag="ProcessList">
                     <NavigationViewItem.Icon>
@@ -50,6 +57,7 @@
             <NavigationView.FooterMenuItems>
                 <NavigationViewItem
                     x:Name="SettingsItem"
+                    AutomationProperties.AutomationId="NavSettings"
                     Content="设置"
                     Tag="Settings">
                     <NavigationViewItem.Icon>

@@ -97,7 +97,7 @@ private void InitializeConverters()
     Resources["FloatToStringConverter"] = new FloatToStringConverter();
     Resources["UInt64ToStringConverter"] = new UInt64ToStringConverter();
     Resources["StringToVisibilityConverter"] = new StringToVisibilityConverter();
-    Resources["PercentageToWidthConverter"] = new PercentageToWidthConverter { MaxWidth = 120 };
+    Resources["FloatToScaleConverter"] = new FloatToScaleConverter();
 }
 ```
 
@@ -542,9 +542,9 @@ DeepSeek API 预计 2026 年 7 月中旬起采用峰谷定价：
 
 ---
 
-## 待优化项
+## 已解决的问题
 
-1. **主题切换**：ThemeHelper 已实现，但需要在 UI 中添加主题切换控件
+1. ~~**主题切换**：ThemeHelper 已实现，设置页面已添加主题切换控件~~
 2. **错误处理**：需要更完善的全局异常处理
 3. **性能监控**：GPU 监控在某些系统上可能返回 0
 4. **AI 分析**：需要配置有效的 API 密钥才能使用
@@ -558,6 +558,120 @@ DeepSeek API 预计 2026 年 7 月中旬起采用峰谷定价：
 - [WinUI 3 Gallery](https://github.com/microsoft/WinUI-Gallery)
 - [CommunityToolkit.Mvvm](https://learn.microsoft.com/en-us/dotnet/communitytoolkit/mvvm/)
 - [Windows App SDK](https://learn.microsoft.com/en-us/windows/apps/windows-app-sdk/)
+
+---
+
+### 问题 13：固定宽度进度条不响应窗口缩放
+
+**症状：**
+窗口缩放后 CPU/GPU/RAM 占用条长度不准确，显示宽度始终为 120px。
+
+**原因：**
+`PercentageToWidthConverter` 将 `MaxWidth` 硬编码为 120，绑定在 `Border.Width` 上。
+
+**解决方案：**
+移除固定宽度转换器，使用 `ScaleTransform` 按百分比缩放填充条：
+
+```xml
+<Border HorizontalAlignment="Stretch">
+    <Border.RenderTransform>
+        <ScaleTransform CenterX="0" ScaleX="{x:Bind Progress, Converter={StaticResource FloatToScaleConverter}}" />
+    </Border.RenderTransform>
+</Border>
+```
+
+`FloatToScaleConverter` 返回 `value / 100.0`，以容器实际宽度为基础缩放。
+
+---
+
+### 问题 14：NavigationView 最小模式下汉堡按钮与内容重叠
+
+**症状：**
+窗口缩小时，`NavigationView` 切换到最小模式，汉堡菜单图标覆盖在 Frame 内容左上角。
+
+**原因：**
+未设置 `NavigationView.Header`，最小模式下汉堡按钮没有专属布局槽位。
+
+**解决方案：**
+添加 `NavigationView.Header` 为汉堡按钮预留空间：
+
+```xml
+<NavigationView.Header>
+    <Grid Height="48" />
+</NavigationView.Header>
+```
+
+48px 高度为汉堡按钮提供布局区域，防止与内容重叠。
+
+---
+
+### 问题 15：进程枚举产生大量 Win32Exception 调试噪声
+
+**症状：**
+调试输出中大量 "System.ComponentModel.Win32Exception" 和 "System.InvalidOperationException"。
+
+**原因：**
+`Process.GetProcesses()` 返回系统进程（PID 0/4 等），访问其 `ProcessName`/`WorkingSet64`/`TotalProcessorTime` 时抛出异常。
+
+**解决方案：**
+1. 跳过 `pid <= 4` 的系统进程
+2. 先检查 `ProcessName` 作为可访问性探针，成功才继续
+3. `WorkingSet64` 和 `TotalProcessorTime` 各自使用独立 try-catch
+
+```csharp
+var pid = proc.Id;
+if (pid <= 4) continue;
+var name = proc.ProcessName; // 探针——失败则整个跳过
+// ...
+ulong ramMB = 0;
+try { ramMB = (ulong)(proc.WorkingSet64 / (1024 * 1024)); } catch { }
+TimeSpan cpuTime = TimeSpan.Zero;
+try { cpuTime = proc.TotalProcessorTime; } catch { }
+```
+
+---
+
+### 问题 16：窗口标题栏不跟随应用主题切换
+
+**症状：**
+通过 `RequestedTheme` 切换深色/浅色模式后，窗口标题栏按钮颜色不更新，深色模式下按钮不可见。
+
+**原因：**
+WinUI 3 的 `RequestedTheme` 仅影响客户区，非客户区（标题栏）需手动通过 `AppWindow.TitleBar` API 设置。
+
+**解决方案：**
+在 `ThemeHelper` 中添加 `UpdateTitleBarTheme(AppWindow)` 方法，主题切换时同时更新标题栏按钮颜色：
+
+```csharp
+public static void UpdateTitleBarTheme(AppWindow appWindow)
+{
+    var isDark = GetActualTheme() == ElementTheme.Dark;
+    titleBar.ButtonForegroundColor = isDark ? white : black;
+    titleBar.ButtonBackgroundColor = transparent;
+    // ... hover/pressed/inactive states
+}
+```
+
+**⚠️ 关键**：只设置 `Button*` 属性（`ButtonForegroundColor`、`ButtonBackgroundColor` 等）。
+切勿设置 `ForegroundColor` 或 `BackgroundColor`——这两个属性会激活「完全自定义标题栏」模式，
+使标题栏脱离系统主题跟踪。它们仅在 `ExtendsContentIntoTitleBar = true` 时有效。
+
+`ThemeHelper` 在 `App.OnLaunched()` 中初始化，`ThemeChanged` 事件自动传播到所有窗口。
+
+---
+
+### 问题 17：MicaBackdrop 不跟随应用 RequestedTheme
+
+**症状：**
+应用切换到浅色模式后，背景仍然显示深色毛玻璃效果（Mica）。
+
+**原因：**
+`MicaBackdrop` 使用 Windows 系统深浅色模式，无论应用的 `RequestedTheme` 如何设置。
+若 Windows 系统为深色模式而应用切换到浅色模式，Mica 背景依然保持深色。
+
+**解决方案：**
+在「设置 → 外观」中选择「跟随系统」，让 Mica 效果、窗口边框、应用内容三者保持一致。
+如需独立于系统切换主题，可使用 `DesktopAcrylicBackdrop` 替代 Mica。
 
 ---
 
@@ -978,3 +1092,4 @@ AppPackages/
 |------|------|------|
 | 1.0.0.0 | 2026-07-05 | 初始版本 |
 | 1.0.0.1 | 2026-07-05 | 禁用裁剪，修复 CPU/GPU/RAM 识别问题 |
+| 1.1.0.0 | 2026-07-20 | 修复进度条缩放、汉堡菜单重叠、标题栏主题跟随、进程枚举调试噪声 |

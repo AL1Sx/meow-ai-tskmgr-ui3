@@ -100,6 +100,7 @@
 
             <!-- 锐评配置 -->
             <Button
+                AutomationProperties.AutomationId="BtnCritiqueConfig"
                 HorizontalAlignment="Stretch"
                 Command="{x:Bind ViewModel.CritiqueConfigCommand}"
                 IsEnabled="{x:Bind ViewModel.IsCritiquing, Converter={StaticResource BoolNegationConverter}, Mode=OneWay}">
@@ -110,7 +111,7 @@
                         Width="16"
                         Height="16"
                         IsActive="{x:Bind ViewModel.IsCritiquing, Mode=OneWay}"
-                        Visibility="{x:Bind ViewModel.IsCritiquing, Mode=OneWay}" />
+                        Visibility="{x:Bind ViewModel.IsCritiquing, Converter={StaticResource BooleanToVisibilityConverter}, Mode=OneWay}" />
                 </StackPanel>
             </Button>
 
