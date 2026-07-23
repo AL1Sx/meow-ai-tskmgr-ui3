@@ -16,7 +16,7 @@
   <mp:PhoneIdentity PhoneProductId="a2e10a9d-2604-4d10-b879-414a9cfd9dfb" PhonePublisherId="00000000-0000-0000-0000-000000000000"/>
 
   <Properties>
-    <DisplayName>meow-ai-tskmgr-ui3</DisplayName>
+    <DisplayName>喵喵AI任务管理器</DisplayName>
     <PublisherDisplayName>Alice</PublisherDisplayName>
     <Logo>Assets\StoreLogo.png</Logo>
   </Properties>
@@ -35,8 +35,8 @@
       Executable="$targetnametoken$.exe"
       EntryPoint="$targetentrypoint$">
       <uap:VisualElements
-        DisplayName="meow-ai-tskmgr-ui3"
-        Description="meow-ai-tskmgr-ui3"
+        DisplayName="喵喵AI任务管理器"
+        Description="AI-powered system monitor with cat-girl personality"
         BackgroundColor="transparent"
         Square150x150Logo="Assets\Square150x150Logo.png"
         Square44x44Logo="Assets\Square44x44Logo.png">

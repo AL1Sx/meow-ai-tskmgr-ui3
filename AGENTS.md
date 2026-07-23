@@ -102,6 +102,20 @@ the Mica backdrop remains dark. Set theme to "跟随系统" in Settings for cons
 System processes (PID 0/4 etc.) throw on `ProcessName`/`WorkingSet64`/`TotalProcessorTime`.
 Always guard individual property access with try-catch and skip inaccessible PIDs early.
 
+### 12. Unpackaged apps must set `<WindowsPackageType>None</WindowsPackageType>`
+
+Without this property, the Windows App SDK Foundation auto-initializer calls
+`DeploymentManager.Initialize()` on startup, which crashes with
+`COMException (0x80040154)` — the `DeploymentInitializeOptions` COM class is
+not registered for unpackaged apps. Add to `csproj`:
+
+```xml
+<WindowsPackageType>None</WindowsPackageType>
+```
+
+Also set `<EnableMsixTooling>true</EnableMsixTooling>` if you want MSIX
+publishing to still work — the two properties are independent.
+
 ## Service Lifecycle
 
 ```
