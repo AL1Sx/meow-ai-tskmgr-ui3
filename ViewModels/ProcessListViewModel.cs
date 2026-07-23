@@ -4,7 +4,6 @@ using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Management;
 using System.Runtime.CompilerServices;
-using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.Input;
 using meow_ai_tskmgr_ui3.Models;
@@ -12,78 +11,15 @@ using meow_ai_tskmgr_ui3.Services;
 
 namespace meow_ai_tskmgr_ui3.ViewModels;
 
-public partial class SystemInfoViewModel : INotifyPropertyChanged
+public partial class ProcessListViewModel : INotifyPropertyChanged
 {
     private readonly SystemMonitorService _monitorService;
     private readonly AIService _aiService;
 
-    private string _cpuName = "";
-    private string _gpuName = "";
-    private string _ramInfo = "";
-    private string _osInfo = "";
-    private string _machineName = "";
-    private string _motherboardInfo = "";
-    private string _diskInfo = "";
-    private string _configCritique = "";
-    private bool _isCritiquing;
     private int _processCount;
     private string _searchQuery = "";
     private string _selectedProcessInfo = "";
     private bool _isLoading;
-
-    public string CpuName
-    {
-        get => _cpuName;
-        set { _cpuName = value; OnPropertyChanged(); }
-    }
-
-    public string GpuName
-    {
-        get => _gpuName;
-        set { _gpuName = value; OnPropertyChanged(); }
-    }
-
-    public string RamInfo
-    {
-        get => _ramInfo;
-        set { _ramInfo = value; OnPropertyChanged(); }
-    }
-
-    public string OsInfo
-    {
-        get => _osInfo;
-        set { _osInfo = value; OnPropertyChanged(); }
-    }
-
-    public string MachineName
-    {
-        get => _machineName;
-        set { _machineName = value; OnPropertyChanged(); }
-    }
-
-    public string MotherboardInfo
-    {
-        get => _motherboardInfo;
-        set { _motherboardInfo = value; OnPropertyChanged(); }
-    }
-
-    public string DiskInfo
-    {
-        get => _diskInfo;
-        set { _diskInfo = value; OnPropertyChanged(); }
-    }
-
-    public string ConfigCritique
-    {
-        get => _configCritique;
-        set { _configCritique = value; OnPropertyChanged(); }
-    }
-
-    public bool IsCritiquing
-    {
-        get => _isCritiquing;
-        set { _isCritiquing = value; OnPropertyChanged(); }
-    }
 
     public int ProcessCount
     {
@@ -124,64 +60,13 @@ public partial class SystemInfoViewModel : INotifyPropertyChanged
     private IRelayCommand? _queryProcessCommand;
     public IRelayCommand QueryProcessCommand => _queryProcessCommand ??= new AsyncRelayCommand(QueryProcessAsync);
 
-    private IRelayCommand? _critiqueConfigCommand;
-    public IRelayCommand CritiqueConfigCommand => _critiqueConfigCommand ??= new AsyncRelayCommand(CritiqueConfigAsync);
-
-    public SystemInfoViewModel(SystemMonitorService monitorService, AIService aiService)
+    public ProcessListViewModel(SystemMonitorService monitorService, AIService aiService)
     {
         _monitorService = monitorService;
         _aiService = aiService;
-        LoadSystemInfo();
-    }
-
-    private void LoadSystemInfo()
-    {
-        MachineName = Environment.MachineName;
-        OsInfo = RuntimeInformation.OSDescription;
-
-        // 获取详细硬件信息
-        CpuName = GetCpuNameStatic();
-        GpuName = GetGpuNameAllStatic();  // 显示所有GPU
-        RamInfo = GetRamInfoStatic();
-        MotherboardInfo = GetMotherboardInfoStatic();
-        DiskInfo = GetDiskInfoStatic();
-
         LoadProcesses();
     }
 
-    private async Task CritiqueConfigAsync()
-    {
-        if (IsCritiquing) return;
-
-        IsCritiquing = true;
-        ConfigCritique = "猫娘正在审视你的配置...";
-
-        try
-        {
-            var prompt = $@"你是一只可爱的猫娘AI助手。请用活泼可爱的语气评价以下电脑配置，可以适当吐槽或夸奖，150字以内。
-
-计算机名: {MachineName}
-操作系统: {OsInfo}
-CPU: {CpuName}
-GPU: {GpuName}
-内存: {RamInfo}
-主板: {MotherboardInfo}
-硬盘: {DiskInfo}";
-
-            var result = await _aiService.CritiqueConfigAsync(prompt);
-            ConfigCritique = result;
-        }
-        catch (Exception ex)
-        {
-            ConfigCritique = $"锐评失败: {ex.Message}";
-        }
-        finally
-        {
-            IsCritiquing = false;
-        }
-    }
-
-    // 静态方法，供 DashboardViewModel 调用
     public static string GetCpuNameStatic()
     {
         try
@@ -260,7 +145,6 @@ GPU: {GpuName}
         }
         catch { }
 
-        // 备用方案
         var gcInfo = GC.GetGCMemoryInfo();
         return $"{gcInfo.TotalAvailableMemoryBytes / (1024 * 1024 * 1024)} GB";
     }
@@ -302,11 +186,6 @@ GPU: {GpuName}
         return $"{gcInfo.TotalAvailableMemoryBytes / (1024 * 1024 * 1024)} GB";
     }
 
-    private string GetCpuName() => GetCpuNameStatic();
-    private string GetGpuName() => GetGpuNameStatic();
-    private string GetRamInfo() => GetRamInfoStatic();
-    private string GetMotherboardInfo() => GetMotherboardInfoStatic();
-
     public static string GetDiskInfoStatic()
     {
         try
@@ -328,8 +207,6 @@ GPU: {GpuName}
         catch { }
         return "未检测到硬盘";
     }
-
-    private string GetDiskInfo() => GetDiskInfoStatic();
 
     private void LoadProcesses()
     {

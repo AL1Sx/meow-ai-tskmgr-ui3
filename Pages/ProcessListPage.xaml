@@ -99,8 +99,8 @@
                 <!-- 进程列表 -->
                 <ListView
                     Grid.Row="1"
-                    ItemsSource="{x:Bind ViewModel.Processes, Mode=OneWay}"
-                    SelectionMode="Single">
+                    AutomationProperties.AutomationId="ProcessListView"
+                    ItemsSource="{x:Bind ViewModel.Processes, Mode=OneWay}">
                     <ListView.ItemTemplate>
                         <DataTemplate x:DataType="models:ProcessInfo"
                                       xmlns:models="using:meow_ai_tskmgr_ui3.Models">

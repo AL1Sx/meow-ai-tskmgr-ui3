@@ -30,7 +30,11 @@ Pages/
   HardwareInfoPage  → WMI hardware info (CPU/GPU/mobo/disk names)
   ProcessListPage   → Process list with search + AI query
   SettingsPage      → API config + monitor interval + theme toggle
-ViewModels/        → One VM per page, INotifyPropertyChanged (manual)
+ViewModels/
+  DashboardViewModel   → DashboardPage
+  HardwareInfoViewModel → HardwareInfoPage (hardware info + config critique)
+  ProcessListViewModel → ProcessListPage (process list + search + AI query)
+  SettingsViewModel    → SettingsPage
 Services/          → SystemMonitorService, AIService, ConfigService
 Helpers/           → ThemeHelper, WindowHelper, SettingsHelper
 Models/            → SystemStatus, ProcessInfo, AnalysisResult, AppConfig
@@ -59,12 +63,12 @@ ViewModels capture `DispatcherQueue.GetForCurrentThread()` in constructor and di
 
 Use `<StackPanel Orientation="Horizontal"><FontIcon/><TextBlock/></StackPanel>` inside `Button.Content`.
 
-### 5. Window handle via P/Invoke
+### 5. Window handle via WinRT.Interop (not GetActiveWindow)
 
-`WinRT.Interop.WindowFromWindow` does not exist. Use:
+`WinRT.Interop.WindowFromWindow` does not exist. Use `WindowNative.GetWindowHandle(this)`
+instead of `GetActiveWindow()` (which has a race condition if another window has focus):
 ```csharp
-[DllImport("user32.dll")] static extern IntPtr GetActiveWindow();
-var hwnd = GetActiveWindow();
+var hwnd = WinRT.Interop.WindowNative.GetWindowHandle(this);
 var windowId = Microsoft.UI.Win32Interop.GetWindowIdFromWindow(hwnd);
 ```
 
@@ -132,7 +136,6 @@ WindowHelper.TrackWindow() called for each Window to support theme propagation.
 - `System.Diagnostics.PerformanceCounter` 8.0.0 (CPU/GPU/RAM monitoring)
 - `System.Management` 8.0.0 (WMI hardware info)
 - `CommunityToolkit.Mvvm` 8.4.0 (IRelayCommand, AsyncRelayCommand only)
-- `PInvoke.User32` 0.7.124 (window handle)
 
 ## AI Configuration
 

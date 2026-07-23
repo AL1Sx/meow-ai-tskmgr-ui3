@@ -24,7 +24,7 @@
                     Height="16"
                     Margin="8,0,0,0"
                     IsActive="{x:Bind IsAnalyzing, Mode=OneWay}"
-                    Visibility="{x:Bind IsAnalyzing, Mode=OneWay}" />
+                    Visibility="{x:Bind IsAnalyzing, Mode=OneWay, Converter={StaticResource BooleanToVisibilityConverter}}" />
                 <TextBlock
                     Grid.Column="2"
                     VerticalAlignment="Center"
@@ -33,7 +33,6 @@
                     Text="{x:Bind StatusText, Mode=OneWay}" />
             </Grid>
             <TextBlock
-                x:Name="ContentText"
                 FontSize="14"
                 LineHeight="22"
                 Text="{x:Bind AnalysisContent, Mode=OneWay}"

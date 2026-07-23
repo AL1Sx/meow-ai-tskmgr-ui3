@@ -166,13 +166,13 @@ public partial class DashboardViewModel : INotifyPropertyChanged
         var hardwareConfig = _configService.Config.Hardware;
         
         if (hardwareConfig.ShowCpuName)
-            CpuName = SystemInfoViewModel.GetCpuNameStatic();
-        
+            CpuName = ProcessListViewModel.GetCpuNameStatic();
+
         if (hardwareConfig.ShowGpuName)
-            GpuName = SystemInfoViewModel.GetGpuNameStatic(hardwareConfig.GpuIndex);
-        
+            GpuName = ProcessListViewModel.GetGpuNameStatic(hardwareConfig.GpuIndex);
+
         if (hardwareConfig.ShowRamDetail)
-            RamDetail = SystemInfoViewModel.GetRamDetailStatic();
+            RamDetail = ProcessListViewModel.GetRamDetailStatic();
     }
 
     public void RefreshHardwareInfo()
@@ -191,7 +191,10 @@ public partial class DashboardViewModel : INotifyPropertyChanged
         {
             await Task.Delay(1000);
             await TriggerAnalysisAsync();
-        });
+        }).ContinueWith(t =>
+        {
+            System.Diagnostics.Debug.WriteLine($"Initial analysis failed: {t.Exception?.InnerException?.Message}");
+        }, TaskContinuationOptions.OnlyOnFaulted);
     }
 
     public void ResumeMonitoring()
@@ -233,7 +236,7 @@ public partial class DashboardViewModel : INotifyPropertyChanged
             {
                 try
                 {
-                    var status = await Task.Run(() => _monitorService.GetStatus(), token);
+                    var status = _monitorService.GetStatus();
                     UpdateUI(() =>
                     {
                         CpuUsage = status.CpuUsage;

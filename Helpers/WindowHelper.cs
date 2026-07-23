@@ -25,6 +25,8 @@ public static class WindowHelper
             {
                 if (child is Frame frame)
                     return frame;
+                if (child is NavigationView navView)
+                    return navView.Content as Frame;
             }
         }
         return null;

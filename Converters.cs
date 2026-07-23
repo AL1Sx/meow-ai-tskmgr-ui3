@@ -4,12 +4,11 @@ using Microsoft.UI.Xaml.Data;
 
 namespace meow_ai_tskmgr_ui3;
 
-public class FloatToScaleConverter : IValueConverter
+public sealed class FloatToScaleConverter : IValueConverter
 {
     public object Convert(object value, Type targetType, object parameter, string language)
     {
         if (value is float f) return f / 100.0;
-        if (value is double d) return d / 100.0;
         return 0.0;
     }
 
@@ -19,7 +18,7 @@ public class FloatToScaleConverter : IValueConverter
     }
 }
 
-public class FloatToStringConverter : IValueConverter
+public sealed class FloatToStringConverter : IValueConverter
 {
     public string Format { get; set; } = "F1";
 
@@ -42,7 +41,7 @@ public class FloatToStringConverter : IValueConverter
     }
 }
 
-public class UInt64ToStringConverter : IValueConverter
+public sealed class UInt64ToStringConverter : IValueConverter
 {
     public object Convert(object value, Type targetType, object parameter, string language)
     {
@@ -59,7 +58,7 @@ public class UInt64ToStringConverter : IValueConverter
     }
 }
 
-public class StringToVisibilityConverter : IValueConverter
+public sealed class StringToVisibilityConverter : IValueConverter
 {
     public object Convert(object value, Type targetType, object parameter, string language)
     {
@@ -74,7 +73,7 @@ public class StringToVisibilityConverter : IValueConverter
     }
 }
 
-public class BooleanToVisibilityConverter : IValueConverter
+public sealed class BooleanToVisibilityConverter : IValueConverter
 {
     public object Convert(object value, Type targetType, object parameter, string language)
     {
@@ -95,7 +94,7 @@ public class BooleanToVisibilityConverter : IValueConverter
     }
 }
 
-public class BoolNegationConverter : IValueConverter
+public sealed class BoolNegationConverter : IValueConverter
 {
     public object Convert(object value, Type targetType, object parameter, string language)
     {

@@ -19,7 +19,10 @@ public class AIService : IDisposable
     public AIService(ConfigService configService)
     {
         _configService = configService;
-        _httpClient = new HttpClient();
+        _httpClient = new HttpClient
+        {
+            Timeout = TimeSpan.FromSeconds(30)
+        };
         _httpClient.DefaultRequestHeaders.Accept.Add(
             new System.Net.Http.Headers.MediaTypeWithQualityHeaderValue("application/json"));
     }
@@ -243,12 +246,9 @@ public class AIService : IDisposable
 
     private string CleanMarkdown(string text)
     {
-        return text
-            .Replace("**", "")
-            .Replace("*", "")
+        return System.Text.RegularExpressions.Regex.Replace(text, @"(\*\*|__)(.*?)\1", "$2")
             .Replace("`", "")
-            .Replace("#", "")
-            .Replace("-", "•");
+            .Trim();
     }
 
     private class AIResponse

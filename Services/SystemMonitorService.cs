@@ -31,9 +31,8 @@ public class SystemMonitorService : IDisposable
             InitializeGpuCounters();
             _initialized = true;
 
-            // PerformanceCounter 需要第一次调用后等待才能获取有效值
+            // 首次调用 NextValue() 初始化计数器（首个值总是0）
             _cpuCounter.NextValue();
-            System.Threading.Thread.Sleep(100);
         }
         catch (Exception ex)
         {

@@ -5,11 +5,11 @@ namespace meow_ai_tskmgr_ui3.Pages;
 
 public sealed partial class HardwareInfoPage : Page
 {
-    public SystemInfoViewModel ViewModel { get; }
+    public HardwareInfoViewModel ViewModel { get; }
 
     public HardwareInfoPage()
     {
         this.InitializeComponent();
-        ViewModel = App.SystemInfoViewModel!;
+        ViewModel = App.HardwareInfoViewModel!;
     }
 }

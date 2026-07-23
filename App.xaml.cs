@@ -16,7 +16,8 @@ public partial class App : Application
 
     public static DashboardViewModel? DashboardViewModel { get; private set; }
     public static SettingsViewModel? SettingsViewModel { get; private set; }
-    public static SystemInfoViewModel? SystemInfoViewModel { get; private set; }
+    public static HardwareInfoViewModel? HardwareInfoViewModel { get; private set; }
+    public static ProcessListViewModel? ProcessListViewModel { get; private set; }
 
     public App()
     {
@@ -39,7 +40,8 @@ public partial class App : Application
 
             DashboardViewModel = new DashboardViewModel(MonitorService, AIService, ConfigService);
             SettingsViewModel = new SettingsViewModel(ConfigService);
-            SystemInfoViewModel = new SystemInfoViewModel(MonitorService, AIService);
+            HardwareInfoViewModel = new HardwareInfoViewModel(AIService);
+            ProcessListViewModel = new ProcessListViewModel(MonitorService, AIService);
         }
         catch (Exception ex)
         {

@@ -9,15 +9,12 @@
     <Border Style="{StaticResource StatusCardBorderStyle}">
         <StackPanel Spacing="4">
             <TextBlock
-                x:Name="LabelText"
                 Style="{StaticResource CardTitleStyle}"
                 Text="{x:Bind Label}" />
             <TextBlock
-                x:Name="ValueText"
                 Style="{StaticResource CardValueStyle}"
                 Text="{x:Bind Value, Mode=OneWay}" />
             <TextBlock
-                x:Name="InfoTextBlock"
                 Style="{StaticResource CardInfoStyle}"
                 Text="{x:Bind AdditionalInfo, Mode=OneWay}"
                 Visibility="{x:Bind AdditionalInfo, Mode=OneWay, Converter={StaticResource StringToVisibilityConverter}}" />

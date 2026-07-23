@@ -207,8 +207,8 @@ public partial class SettingsViewModel : INotifyPropertyChanged
             _ => 0
         };
 
-        // 加载 GPU 列表
-        LoadGpuList();
+        // 异步加载 GPU 列表
+        _ = LoadGpuListAsync();
     }
 
     private int FindModelIndex(string modelName)
@@ -222,33 +222,39 @@ public partial class SettingsViewModel : INotifyPropertyChanged
         return CustomModelIndex;
     }
 
-    private void LoadGpuList()
+    private async Task LoadGpuListAsync()
     {
-        try
+        await Task.Run(() =>
         {
-            using var searcher = new ManagementObjectSearcher("SELECT Name FROM Win32_VideoController");
-            foreach (ManagementObject obj in searcher.Get())
+            try
             {
-                var name = obj["Name"]?.ToString()?.Trim();
-                if (!string.IsNullOrEmpty(name))
+                using var searcher = new ManagementObjectSearcher("SELECT Name FROM Win32_VideoController");
+                foreach (ManagementObject obj in searcher.Get())
                 {
-                    AvailableGpus.Add(name);
+                    var name = obj["Name"]?.ToString()?.Trim();
+                    if (!string.IsNullOrEmpty(name))
+                    {
+                        AvailableGpus.Add(name);
+                    }
                 }
             }
-        }
-        catch { }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"GPU list load error: {ex.Message}");
+            }
 
-        // 如果没有检测到 GPU，添加默认项
-        if (AvailableGpus.Count == 0)
-        {
-            AvailableGpus.Add("未检测到 GPU");
-        }
+            // 如果没有检测到 GPU，添加默认项
+            if (AvailableGpus.Count == 0)
+            {
+                AvailableGpus.Add("未检测到 GPU");
+            }
 
-        // 确保 GpuIndex 在有效范围内
-        if (_gpuIndex >= AvailableGpus.Count)
-        {
-            _gpuIndex = 0;
-        }
+            // 确保 GpuIndex 在有效范围内
+            if (_gpuIndex >= AvailableGpus.Count)
+            {
+                _gpuIndex = 0;
+            }
+        });
     }
 
     private async Task SaveSettingsAsync()
